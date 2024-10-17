@@ -18,9 +18,9 @@ bool hop(long long x, long long y){
 
     if (u==v) return false;
 
-    if (rnk[u]>rnk[v]) swap(u,v);
+    if (rnk[u]<rnk[v]) swap(u,v);
 
-    truoc[u]=v;
+    truoc[v]=u;
     rnk[u]+=rnk[v];
 
     return true;
