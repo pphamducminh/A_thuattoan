@@ -31,7 +31,7 @@ using namespace std;
 #define all1(a) a+1,a+n+1
 #define ll long long
 
-const long long INF=1e18;
+const long long INF=1e9;
 const long long MOD=1e9+7;
 const long long MODD=998244353; // 998244353
 const int maxN=1e6+9;
@@ -49,7 +49,7 @@ signed main(){
         file("ducminh");
     #endif
 
-    // file("connect");
+    // file("creature");
 
 
 
@@ -70,102 +70,43 @@ signed main(){
 
 /// -------------- PROBLEM SOLUION --------------------
 
-int n,m;
-vector<int> a[200009], a_bcc[200009];
-pair<int,int> dscanh[200009];
-stack<int> st;
-int low[200009], num[200009], in_bcc[200009], dbcc=0, ti=0;
-bool used[200009];
-vector<int> luu[200009];
 
-
-
-void tarjan(long long u){
-
-    low[u]=num[u]=++ti;
-    st.push(u);
-
-    for (long long x: a[u]){
-
-
-        if (used[x]) continue;
-
-        used[x]=true;
-        int v=dscanh[x].first+dscanh[x].second-u;
-
-        if (!num[v]){
-
-            tarjan(v);
-            low[u]=min(low[u],low[v]);
-        }
-        else low[u]=min(low[u],num[v]);
-    }
-    
-
-    if (low[u]==num[u]){
-        dbcc++;
-        long long v;
-
-
-
-        do{
-
-            v=st.top();
-            in_bcc[v]=dbcc;
-            // sum_scc[dscc]=calc()
-
-            luu[dbcc].push_back(v);
-            st.pop();
-        } while (v!=u);
-    }
-}
-
-
-
+long long dp1[1<<(LOG+2)], dp2[1<<(LOG+2)];
+long long a[200009];
 void solve(){
 
-
-    cin >> n >> m;
-    for (int i=1; i<=m; i++){
-        int u,v;
-        cin >> u >> v;
-
-
-        dscanh[i]={u,v};
-        a[u].push_back(i);
-        a[v].push_back(i);
-    }
-
-
-    for (int i=1; i<=m; i++)
-        used[i] = false;
-
+    int n;
+    cin >> n;
 
     for (int i=1; i<=n; i++){
-        if (!num[i]) tarjan(i);
+        cin >> a[i];
+
+        dp1[a[i]]++;
+        dp2[a[i]]++;
     }
 
 
-    cout << dbcc << "\n";
-    for (int i=1; i<=dbcc; i++){
-        cout << luu[i].size() << ' ';
-        for (int x: luu[i]) {
-            cout << x << ' ';
+    for (int i=0; i<=LOG; i++){
+        for (int mask=0; mask<(1<<LOG); mask++){
+            if ((mask>>i)&1) dp1[mask]+=dp1[mask^(1<<i)];
+            else dp2[mask]+=dp2[mask^(1<<i)];
         }
-        cout << "\n";
     }
 
+    long long sum=(1<<LOG)-1;
+    for (int i=1; i<=n; i++){
+        // x|y==x   ->  y se la mask con cua x
+        // x&y==x   ->  x se la mask con cua y
+        // x&y!=0   ->  lay nhung thang mask con cua mask nguoc cua x, va tru di nhung thang do ra khoi kq 
+        cout << dp1[a[i]] << ' ' << dp2[a[i]] << ' ' << n-dp1[sum^a[i]] << "\n";
+
+
+    }
 
 
 
 }
- 
- 
 
-
-
-
- 
 
 
 
