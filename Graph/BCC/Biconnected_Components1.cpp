@@ -31,11 +31,11 @@ using namespace std;
 #define all1(a) a+1,a+n+1
 #define ll long long
 
-const long long INF=1e9;
+const long long INF=1e18;
 const long long MOD=1e9+7;
 const long long MODD=998244353; // 998244353
-const int maxN=2e5+9;
-const short LOG=18;
+const int maxN=1e6+9;
+const short LOG=20;
 
 
 //------------------------
@@ -49,7 +49,7 @@ signed main(){
         file("ducminh");
     #endif
 
-    // file("boxes");
+    // file("connect");
 
 
 
@@ -80,62 +80,73 @@ vector<int> luu[200009];
 
 
 
-void tarjan(int u) {
-    low[u] = num[u] = ++num[0];
-    for (int x: a[u]) {
-        int v=x;
-        if(!num[v]) {
-            st.push(u);
-            tarjan(v);
-            low[u] = min(low[u], low[v]);
+void tarjan(long long u){
 
-            if(low[v] >= num[u]) {
-
-                dbcc++;
-                a_bcc[u].push_back(n + dbcc);
-                luu[dbcc].push_back(u);
-                do {
-                    v = st.top();
-                    st.pop();
-                    if(u != v && in_bcc[v] != dbcc) {
-                        luu[dbcc].push_back(v);
-                        a_bcc[n + dbcc].push_back(v);
-                        in_bcc[v] = dbcc;
-                    }
-                } while(v != u);
-            }
-        } else {
-            low[u] = min(low[u], num[v]);
-        }
-    }
-
+    low[u]=num[u]=++ti;
     st.push(u);
+
+    for (long long x: a[u]){
+
+
+        if (used[x]) continue;
+
+        used[x]=true;
+        int v=dscanh[x].first+dscanh[x].second-u;
+
+        if (!num[v]){
+
+            tarjan(v);
+            low[u]=min(low[u],low[v]);
+        }
+        else low[u]=min(low[u],num[v]);
+    }
+    
+
+    if (low[u]==num[u]){
+        dbcc++;
+        long long v;
+
+
+
+        do{
+
+            v=st.top();
+            in_bcc[v]=dbcc;
+            // sum_scc[dscc]=calc()
+
+            luu[dbcc].push_back(v);
+            st.pop();
+        } while (v!=u);
+    }
 }
+
 
 
 void solve(){
 
 
-
-
     cin >> n >> m;
-
     for (int i=1; i<=m; i++){
         int u,v;
         cin >> u >> v;
 
+
         dscanh[i]={u,v};
-        a[u].push_back(v);
-        a[v].push_back(u);
+        a[u].push_back(i);
+        a[v].push_back(i);
     }
+
+
+    for (int i=1; i<=m; i++)
+        used[i] = false;
 
 
     for (int i=1; i<=n; i++){
         if (!num[i]) tarjan(i);
     }
 
-    cout << dbcc << "\n";
 
+    cout << dbcc << "\n";
     for (int i=1; i<=dbcc; i++){
         cout << luu[i].size() << ' ';
         for (int x: luu[i]) {
@@ -147,11 +158,16 @@ void solve(){
 
 
 
-
 }
  
  
+
+
+
+
  
+
+
 
 
 
