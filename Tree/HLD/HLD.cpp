@@ -135,74 +135,80 @@ int gettree(int id, int l, int r, int u, int v){
 
 
 
-struct HeavyLightDecomposition {
-    int cnts=0,cntp=1;
-    int chainhead[maxN], idst[maxN], idpath[maxN], p[maxN], dep[maxN], in[maxN], out[maxN];
+struct HLD {
+    int cnts=0, cntp=1;
+    int chainhead[maxN], idst[maxN], idpath[maxN], p[maxN], dep[maxN], in[maxN], out[maxN], sz[maxN];
 
-    HeavyLightDecomposition(){
+    HLD(){
         chainhead[1]=1;
     }
 
-
     void dfs(int u, int par){
-        idst[u]=++cnts;
-        idpath[u]=cntp;
         p[u]=par;
         dep[u]=dep[par]+1;
-        in[u]=cnts;
 
-        bool ok=1;
         for (int x: a[u]){
             if (x==par) continue;
 
-            if (!ok){
-                cntp++;
-                chainhead[x]=x;
-            }
-            else {
-                ok=0;
-                chainhead[x]=chainhead[u];
-            }
             dfs(x,u);
+            sz[u]=sz[x]+1;
+        }
+        sz[u]++;
+    }
+    void buildhld(int u, int par){
+        if (chainhead[cntp]==0) chainhead[cntp]=u;
+        idst[u]=++cnts;
+        idpath[u]=cntp;
+        in[u]=cnts;
+
+        int big=-1;
+        for (int x: a[u]){
+            if (x==par) continue;
+
+            if (big==-1 || sz[x]>sz[big]) big=x;
         }
 
+        if (big!=-1) buildhld(big,u);
+
+        for (int x: a[u]){
+            if (x==par || x==big) continue;
+
+            cntp++;
+            buildhld(x,u); 
+        }
         out[u]=cnts;
     }
 
     void updatepath(int u, int v, int val){
-        while (chainhead[u]!=chainhead[v]){
-            if (dep[p[chainhead[u]]]<dep[p[chainhead[v]]]) swap(u,v);
+        while (idpath[u]!=idpath[v]){
+            if (dep[p[chainhead[idpath[u]]]]<dep[p[chainhead[idpath[v]]]]) swap(u,v);
 
-            updatetree(1,1,n,idst[chainhead[u]], idst[u], val);
-            u=p[chainhead[u]];
+            updatetree(1,1,n,idst[chainhead[idpath[u]]],idst[u],val);
+            u=p[chainhead[idpath[u]]];
         }
 
         if (idst[u]>idst[v]) swap(u,v);
-        updatetree(1,1,n,idst[u],idst[v], val);
+        updatetree(1,1,n,idst[u],idst[v],val);
     }
     int getpath(int u, int v){
-        int ans=0;
-        while (chainhead[u]!=chainhead[v]){
-            if (dep[p[chainhead[u]]]<dep[p[chainhead[v]]]) swap(u,v);
+        int ans=-INF;
+        while (idpath[u]!=idpath[v]){
+            if (dep[p[chainhead[idpath[u]]]]<dep[p[chainhead[idpath[v]]]]) swap(u,v);
 
-            ans=max(ans,gettree(1,1,n,idst[chainhead[u]],idst[u]));
-            u=p[chainhead[u]];
+            ans=max(ans,gettree(1,1,n,idst[chainhead[idpath[u]]],idst[u]));
+            u=p[chainhead[idpath[u]]];
         }
 
         if (idst[u]>idst[v]) swap(u,v);
         ans=max(ans,gettree(1,1,n,idst[u],idst[v]));
-
         return ans;
     }
-
     void updateroot(int u, int val){
         updatetree(1,1,n,in[u],out[u],val);
     }
     int getroot(int u){
         return gettree(1,1,n,in[u],out[u]);
     }
-
-
 } hld;
 
 void solve(){
@@ -221,6 +227,8 @@ void solve(){
     }
 
     hld.dfs(1,0);
+    hld.buildhld(1,0);
+
     for (int i=1; i<=n; i++){
         updatetree(1,1,n,hld.in[i],hld.in[i],val[i]);
     }
