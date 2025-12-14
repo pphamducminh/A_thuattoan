@@ -146,14 +146,14 @@ struct HLD {
     void dfs(int u, int par){
         p[u]=par;
         dep[u]=dep[par]+1;
-
+     
+        sz[u]=1;
         for (int x: a[u]){
             if (x==par) continue;
-
+     
             dfs(x,u);
-            sz[u]=sz[x]+1;
+            sz[u]+=sz[x];
         }
-        sz[u]++;
     }
     void buildhld(int u, int par){
         if (chainhead[cntp]==0) chainhead[cntp]=u;
